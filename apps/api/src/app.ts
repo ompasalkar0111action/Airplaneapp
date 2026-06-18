@@ -25,11 +25,13 @@ export const createApp = () => {
   // Create Express application.
   const app = express();
 
-  // Security and request middlewares.
+  // Security and request middlewares. // origin: env.WEB_ORIGIN.split(",").map((origin) => origin.trim()), - previously used
+
   app.use(helmet());
   app.use(
     cors({
-      origin: env.WEB_ORIGIN.split(",").map((origin) => origin.trim()),
+        origin: env.WEB_ORIGIN.split(",").map(o => o.trim()),
+    credentials: true,
     }),
   );
   app.use(express.json({ limit: "1mb" }));
