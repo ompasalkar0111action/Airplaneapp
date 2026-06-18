@@ -1,0 +1,116 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #f4f7fb;
+  color: #17212b;
+}
+
+.wrapper {
+  padding: 16px;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #d7e1ee;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.eyebrow {
+  color: #006699;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  margin: 0 0 8px;
+}
+
+.intro,
+.meta,
+.message {
+  color: #5a6b7c;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+input,
+select,
+button {
+  font: inherit;
+}
+
+input,
+select {
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #c6d2df;
+}
+
+.primary {
+  min-height: 40px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #0d87c7;
+  color: white;
+  cursor: pointer;
+}
+
+.flight-list {
+  display: grid;
+  gap: 10px;
+}
+
+.flight-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #cfd8e3;
+  border-radius: 12px;
+  background: #f9fbfd;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.checkbox {
+  flex-direction: row;
+  align-items: center;
+}
+
+.error {
+  color: #bf2f39;
+}
+
+.success {
+  color: #0d7a32;
+}
+
+@media (max-width: 800px) {
+  .layout,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

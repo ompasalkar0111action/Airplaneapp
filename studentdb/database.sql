@@ -1,0 +1,11 @@
+CREATE DATABASE IF NOT EXISTS studentdb;
+
+USE studentdb;
+
+CREATE TABLE IF NOT EXISTS students (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  regno INT NOT NULL,
+  mark INT NOT NULL,
+  grade VARCHAR(10) NOT NULL,
+  result VARCHAR(50) NOT NULL
+);

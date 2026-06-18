@@ -1,0 +1,136 @@
+<!doctype html>
+<!-- AngularJS version of the same flight booking task -->
+<html lang="en" ng-app="flightApp">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AngularJS Flight Booking</title>
+    <link rel="stylesheet" href="/angularjs/styles.css" />
+  </head>
+  <body ng-controller="FlightController">
+    <!-- Main AngularJS page container -->
+    <div class="wrapper">
+      <section class="card">
+        <p class="eyebrow">AngularJS Module</p>
+        <h1> Flight Booking</h1>
+        <p class="intro">This module solves the same problem using AngularJS.</p>
+
+        <!-- Search form -->
+        <form class="grid" ng-submit="searchFlights()">
+          <label>
+            <span>From</span>
+            <select ng-model="search.origin" ng-options="airport.code as (airport.city + ' (' + airport.code + ')') for airport in airports"></select>
+          </label>
+
+          <label>
+            <span>To</span>
+            <select ng-model="search.destination" ng-options="airport.code as (airport.city + ' (' + airport.code + ')') for airport in airports"></select>
+          </label>
+
+          <label>
+            <span>Date</span>
+            <input type="date" ng-model="search.date" required />
+          </label>
+
+          <label>
+            <span>Cabin</span>
+            <select ng-model="search.cabin">
+              <option value="economy">Economy</option>
+              <option value="premium-economy">Premium Economy</option>
+              <option value="business">Business</option>
+            </select>
+          </label>
+
+          <button class="primary" type="submit">Search Flights</button>
+        </form>
+
+        <p class="message error" ng-if="searchError">{{ searchError }}</p>
+      </section>
+
+      <!-- Two-column layout: flights on left, booking on right -->
+      <section class="layout">
+        <div class="card">
+          <p class="eyebrow">Flights</p>
+          <div class="message" ng-if="loadingFlights">Loading flights...</div>
+          <div class="message" ng-if="!loadingFlights && flights.length === 0">No flights found.</div>
+
+          <!-- Flight list -->
+          <div class="flight-list">
+            <button class="flight-item" ng-repeat="flight in flights" ng-click="selectFlight(flight)" type="button">
+              <div class="top-row">
+                <strong>{{ flight.airline }} {{ flight.flightNumber }}</strong>
+                <span>{{ formatInr(flight.cabinAvailability[search.cabin].fare) }}</span>
+              </div>
+              <div class="meta">{{ flight.origin.code }} to {{ flight.destination.code }}</div>
+              <div class="meta">{{ flight.departureTime }} - {{ flight.arrivalTime }} | {{ flight.durationLabel }}</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <p class="eyebrow">Booking</p>
+          <div ng-if="!selectedFlight" class="message">Select a flight to continue.</div>
+
+          <div ng-if="selectedFlight">
+            <h2>{{ selectedFlight.airline }} {{ selectedFlight.flightNumber }}</h2>
+            <p class="meta">{{ selectedFlight.origin.code }} to {{ selectedFlight.destination.code }}</p>
+
+            <!-- Booking form -->
+            <form class="grid" ng-submit="createBooking()">
+              <label>
+                <span>Seat</span>
+                <select ng-model="booking.seatId" required>
+                  <option value="">Choose a seat</option>
+                  <option ng-repeat="seat in availableSeats" value="{{ seat.id }}">
+                    {{ seat.id }} - {{ formatInr(seat.priceModifier) }}
+                  </option>
+                </select>
+              </label>
+
+              <label>
+                <span>First name</span>
+                <input type="text" ng-model="booking.firstName" required />
+              </label>
+
+              <label>
+                <span>Last name</span>
+                <input type="text" ng-model="booking.lastName" required />
+              </label>
+
+              <label>
+                <span>Email</span>
+                <input type="email" ng-model="booking.email" required />
+              </label>
+
+              <label>
+                <span>Checked bags</span>
+                <select ng-model="booking.checkedBags">
+                  <option value="0">0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                </select>
+              </label>
+
+              <label class="checkbox">
+                <input type="checkbox" ng-model="booking.priorityBoarding" />
+                <span>Priority boarding</span>
+              </label>
+
+              <button class="primary" type="submit">Confirm Booking</button>
+            </form>
+          </div>
+
+          <p class="message error" ng-if="bookingError">{{ bookingError }}</p>
+          <p class="message success" ng-if="bookingResult">
+            Booking confirmed. PNR {{ bookingResult.pnr }} | Total {{ formatInr(bookingResult.totalPrice) }}
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <!-- AngularJS library -->
+    <script src="/angularjs/angular.min.js"></script>
+    <!-- AngularJS app logic -->
+    <script src="/angularjs/app.js"></script>
+  </body>
+</html>
