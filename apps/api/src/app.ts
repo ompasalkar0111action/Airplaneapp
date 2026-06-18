@@ -21,6 +21,7 @@ import { airportsRouter } from "./modules/airports/airports.routes.js";
 import { bookingsRouter } from "./modules/bookings/bookings.routes.js";
 import { flightsRouter } from "./modules/flights/flights.routes.js";
 
+
 export const createApp = () => {
   // Create Express application.
   const app = express();

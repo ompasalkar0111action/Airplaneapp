@@ -13,6 +13,8 @@ import { useState } from "react";
 
 import { ReactBookingModule } from "./components/ReactBookingModule";
 
+
+
 // These are the 4 tabs shown in the main project UI.
 type ViewMode = "overview" | "react" | "angular" | "comparison";
 

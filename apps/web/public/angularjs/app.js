@@ -19,6 +19,8 @@ OUTPUT:
   // Create AngularJS app.
   var app = angular.module("flightApp", []);
 
+  var API_URL = "https://airplaneapp-api.onrender.com";
+
   app.controller("FlightController", [
     "$scope",
     "$http",
@@ -78,7 +80,7 @@ OUTPUT:
         $scope.loadingFlights = true;
         $http({
           method: "GET",
-          url: "/api/flights/search",
+          url: API_URL + "/api/flights/search",
           params: {
             origin: $scope.search.origin,
             destination: $scope.search.destination,
@@ -108,7 +110,7 @@ OUTPUT:
         $scope.bookingResult = null;
         $scope.booking.seatId = "";
 
-        $http.get("/api/flights/" + encodeURIComponent(flight.id)).then(function (response) {
+        $http.get(API_URL + "/api/flights/" + encodeURIComponent(flight.id)).then(function (response) {
           $scope.selectedFlight = response.data.data;
           // Keep only seats that are available for the selected cabin.
           $scope.availableSeats = response.data.data.seatMap.filter(function (seat) {
@@ -129,7 +131,7 @@ OUTPUT:
         }
 
         $http
-          .post("/api/bookings", {
+          .post(API_URL + "/api/bookings", {
             flightId: $scope.selectedFlight.id,
             cabin: $scope.search.cabin,
             seatId: $scope.booking.seatId,
