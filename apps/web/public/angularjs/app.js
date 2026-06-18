@@ -60,7 +60,7 @@ OUTPUT:
 
       $scope.loadAirports = function () {
         // Load airport list from backend.
-        $http.get("/api/airports").then(function (response) {
+        $http.get(API_URL +"/api/airports").then(function (response) {
           $scope.airports = response.data.data;
         });
       };
