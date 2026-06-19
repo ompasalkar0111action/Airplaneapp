@@ -10,13 +10,15 @@ const bookingsService = new BookingsService(new InMemoryBookingsRepository(), fl
 
 test("creates a booking and prevents the same seat from being booked twice", async () => {
   // First search a sample flight from the demo data.
-  const flight = flightsService.searchFlights({
+  const flight = (
+    await flightsService.searchFlights({
     origin: "DEL",
     destination: "DXB",
     date: "2026-06-05",
     cabin: "economy",
     passengers: 1,
-  })[0];
+    })
+  )[0];
 
   assert.ok(flight, "a seeded flight should be returned");
 
@@ -40,7 +42,7 @@ test("creates a booking and prevents the same seat from being booked twice", asy
   });
 
   assert.equal(booking.seatId, seatId);
-  assert.equal(flightsService.findSeat(flight.id, seatId).isAvailable, false);
+  assert.equal((await flightsService.findSeat(flight.id, seatId)).isAvailable, false);
 
   // Second booking for the same seat should fail.
   await assert.rejects(async () => {
@@ -59,4 +61,22 @@ test("creates a booking and prevents the same seat from being booked twice", asy
       },
     });
   });
+});
+
+test("returns a one-stop fallback flight when a direct route is not in the static catalog", async () => {
+  const flights = await flightsService.searchFlights({
+    origin: "SFO",
+    destination: "CDG",
+    date: "2026-06-05",
+    cabin: "economy",
+    passengers: 1,
+  });
+
+  assert.ok(flights.length > 0);
+  const flight = flights[0];
+
+  assert.ok(flight);
+  assert.equal(flight.origin?.code, "SFO");
+  assert.equal(flight.destination?.code, "CDG");
+  assert.equal(flight.stops, 1);
 });

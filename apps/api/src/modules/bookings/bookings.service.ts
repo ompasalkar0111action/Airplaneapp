@@ -29,8 +29,8 @@ export class BookingsService {
 
   async createBooking(input: CreateBookingInput): Promise<BookingRecord> {
     // Booking checks the seat, calculates total price, then saves the record.
-    const flight = this.flightsService.getFlightDetail(input.flightId);
-    const seat = this.flightsService.findSeat(input.flightId, input.seatId);
+    const flight = await this.flightsService.getFlightDetail(input.flightId);
+    const seat = await this.flightsService.findSeat(input.flightId, input.seatId);
 
     // Seat must still be available at booking time.
     if (!seat.isAvailable) {
@@ -48,7 +48,7 @@ export class BookingsService {
     const totalPrice = baseFare + seat.priceModifier + extrasTotal;
 
     // Mark seat as reserved before saving the booking.
-    this.flightsService.reserveSeat(input.flightId, input.seatId);
+    await this.flightsService.reserveSeat(input.flightId, input.seatId);
 
     return await this.bookingsRepository.create({
       id: randomUUID(),

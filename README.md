@@ -56,7 +56,7 @@ npm run dev
 
 ## MySQL Booking Storage
 
-Bookings can be stored in MySQL when `DATABASE_URL` is set for the API.
+Bookings are stored in MySQL when `DATABASE_URL` is set for the API. The backend automatically creates the `bookings` table on first use.
 
 ```bash
 mysql -u root -p airplaneapp < apps/api/src/data/mysql-schema.sql
@@ -69,6 +69,25 @@ DATABASE_URL=mysql://root:password@localhost:3306/airplaneapp
 ```
 
 If `DATABASE_URL` is not set, the backend falls back to in-memory booking storage for local demos and tests.
+
+For an external MySQL provider on Render, add these environment variables to the Render backend service:
+
+```bash
+DATABASE_URL=mysql://USER:PASSWORD@HOST:3306/DATABASE_NAME
+WEB_ORIGIN=https://airplaneapp-webfronend.vercel.app
+```
+
+If the MySQL provider requires SSL, also set:
+
+```bash
+MYSQL_SSL=true
+```
+
+For the Vercel frontend, add:
+
+```bash
+VITE_API_BASE_URL=https://airplaneapp-api.onrender.com
+```
 
 ## How To Test
 

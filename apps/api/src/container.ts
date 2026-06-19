@@ -16,13 +16,14 @@ import { InMemoryBookingsRepository } from "./modules/bookings/bookings.reposito
 import { MysqlBookingsRepository } from "./modules/bookings/mysql-bookings.repository.js";
 import { BookingsService } from "./modules/bookings/bookings.service.js";
 import { FlightsRepository } from "./modules/flights/flights.repository.js";
-import { FlightsService, InventoryRepository } from "./modules/flights/flights.service.js";
+import { FlightsService, InventoryRepository, type SeatInventoryRepository } from "./modules/flights/flights.service.js";
 
 // This file creates shared objects once and reuses them across the app.
 const airportsRepository = new AirportsRepository();
 const flightsRepository = new FlightsRepository();
-const inventoryRepository = new InventoryRepository();
-const bookingsRepository = mysqlPool ? new MysqlBookingsRepository(mysqlPool) : new InMemoryBookingsRepository();
+const mysqlBookingsRepository = mysqlPool ? new MysqlBookingsRepository(mysqlPool) : undefined;
+const bookingsRepository = mysqlBookingsRepository ?? new InMemoryBookingsRepository();
+const inventoryRepository: SeatInventoryRepository = mysqlBookingsRepository ?? new InventoryRepository();
 
 // Flights service handles flight search and seat availability.
 export const flightsService = new FlightsService(airportsRepository, flightsRepository, inventoryRepository);

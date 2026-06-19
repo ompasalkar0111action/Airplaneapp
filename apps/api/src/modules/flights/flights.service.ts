@@ -61,20 +61,26 @@ export interface FlightDetail extends FlightSummary {
   seatMap: Seat[];
 }
 
-export class InventoryRepository {
+export interface SeatInventoryRepository {
+  listBookedSeats(flightId: string): Promise<Set<string>>;
+  isSeatBooked(flightId: string, seatId: string): Promise<boolean>;
+  reserveSeat(flightId: string, seatId: string): Promise<void>;
+}
+
+export class InventoryRepository implements SeatInventoryRepository {
   // This stores booked seats in memory using:
   // flightId -> set of booked seat ids
   private readonly bookedSeatsByFlightId = new Map<string, Set<string>>();
 
-  listBookedSeats(flightId: string): Set<string> {
+  async listBookedSeats(flightId: string): Promise<Set<string>> {
     return new Set(this.bookedSeatsByFlightId.get(flightId) ?? []);
   }
 
-  isSeatBooked(flightId: string, seatId: string): boolean {
+  async isSeatBooked(flightId: string, seatId: string): Promise<boolean> {
     return this.bookedSeatsByFlightId.get(flightId)?.has(seatId) ?? false;
   }
 
-  reserveSeat(flightId: string, seatId: string): void {
+  async reserveSeat(flightId: string, seatId: string): Promise<void> {
     const next = this.bookedSeatsByFlightId.get(flightId) ?? new Set<string>();
     next.add(seatId);
     this.bookedSeatsByFlightId.set(flightId, next);
@@ -125,29 +131,29 @@ export class FlightsService {
   constructor(
     private readonly airportsRepository: AirportsRepository,
     private readonly flightsRepository: FlightsRepository,
-    private readonly inventoryRepository: InventoryRepository,
+    private readonly inventoryRepository: SeatInventoryRepository,
   ) {}
 
-  searchFlights(criteria: SearchFlightsInput): FlightSummary[] {
+  async searchFlights(criteria: SearchFlightsInput): Promise<FlightSummary[]> {
     // Find flights for the selected route and keep only ones with enough seats.
-    return this.flightsRepository
-      .listTemplates()
-      .filter((template) => template.originCode === criteria.origin && template.destinationCode === criteria.destination)
-      .map((template) => this.buildFlightSummary(template, criteria.date))
+    const matchingTemplates = this.findTemplatesForRoute(criteria.origin, criteria.destination);
+    const flights = await Promise.all(matchingTemplates.map((template) => this.buildFlightSummary(template, criteria.date)));
+
+    return flights
       .filter((flight) => flight.cabinAvailability[criteria.cabin].seatsLeft >= criteria.passengers)
       .sort((left, right) => left.departureTime.localeCompare(right.departureTime));
   }
 
-  getFlightDetail(flightId: string): FlightDetail {
+  async getFlightDetail(flightId: string): Promise<FlightDetail> {
     // This returns one flight with its seat map for the booking screen.
     const { template, travelDate } = this.parseFlightId(flightId);
 
-    return this.buildFlightDetail(template, travelDate);
+    return await this.buildFlightDetail(template, travelDate);
   }
 
-  findSeat(flightId: string, seatId: string): Seat {
+  async findSeat(flightId: string, seatId: string): Promise<Seat> {
     // Used during booking to check whether the chosen seat exists.
-    const detail = this.getFlightDetail(flightId);
+    const detail = await this.getFlightDetail(flightId);
     const seat = detail.seatMap.find((candidate) => candidate.id === seatId);
 
     if (!seat) {
@@ -157,18 +163,18 @@ export class FlightsService {
     return seat;
   }
 
-  reserveSeat(flightId: string, seatId: string): void {
+  async reserveSeat(flightId: string, seatId: string): Promise<void> {
     // Prevent the same seat from being booked twice.
-    if (this.inventoryRepository.isSeatBooked(flightId, seatId)) {
+    if (await this.inventoryRepository.isSeatBooked(flightId, seatId)) {
       throw new AppError(409, "SEAT_ALREADY_BOOKED", `Seat ${seatId} has already been reserved.`);
     }
 
-    this.inventoryRepository.reserveSeat(flightId, seatId);
+    await this.inventoryRepository.reserveSeat(flightId, seatId);
   }
 
-  private buildFlightSummary(template: FlightTemplate, date: string): FlightSummary {
+  private async buildFlightSummary(template: FlightTemplate, date: string): Promise<FlightSummary> {
     // Build one frontend-friendly flight object from raw template data.
-    const bookedSeats = this.inventoryRepository.listBookedSeats(this.composeFlightId(template.id, date));
+    const bookedSeats = await this.inventoryRepository.listBookedSeats(this.composeFlightId(template.id, date));
     const seatMap = this.buildSeatMap(template, bookedSeats);
     const [arrivalDate, arrivalTime] = addMinutesToSchedule(date, template.departureTime, template.durationMinutes);
 
@@ -199,14 +205,54 @@ export class FlightsService {
     };
   }
 
-  private buildFlightDetail(template: FlightTemplate, date: string): FlightDetail {
+  private async buildFlightDetail(template: FlightTemplate, date: string): Promise<FlightDetail> {
     // Flight detail = summary + full seat map.
-    const summary = this.buildFlightSummary(template, date);
-    const bookedSeats = this.inventoryRepository.listBookedSeats(summary.id);
+    const summary = await this.buildFlightSummary(template, date);
+    const bookedSeats = await this.inventoryRepository.listBookedSeats(summary.id);
 
     return {
       ...summary,
       seatMap: this.buildSeatMap(template, bookedSeats),
+    };
+  }
+
+  private findTemplatesForRoute(originCode: string, destinationCode: string): FlightTemplate[] {
+    const directTemplates = this.flightsRepository
+      .listTemplates()
+      .filter((template) => template.originCode === originCode && template.destinationCode === destinationCode);
+
+    if (directTemplates.length > 0) {
+      return directTemplates;
+    }
+
+    return [this.buildGeneratedOneStopTemplate(originCode, destinationCode)];
+  }
+
+  private buildGeneratedOneStopTemplate(originCode: string, destinationCode: string): FlightTemplate {
+    const hubCode = chooseHub(originCode, destinationCode);
+    const routeSeed = `${originCode}-${destinationCode}`;
+    const durationMinutes = estimateDurationMinutes(originCode, hubCode) + estimateDurationMinutes(hubCode, destinationCode) + 85;
+    const baseFare = estimateBaseFare(durationMinutes);
+
+    return {
+      id: `generated-${originCode.toLowerCase()}-${destinationCode.toLowerCase()}-1`,
+      airline: "Aerolink Connect",
+      flightNumber: `AC ${flightNumberFromRoute(routeSeed)}`,
+      aircraft: durationMinutes > 520 ? "Boeing 787-8" : "Airbus A321neo",
+      seatProfile: durationMinutes > 520 ? "wide-body" : "narrow-body",
+      originCode,
+      destinationCode,
+      departureTime: "10:30",
+      durationMinutes,
+      stops: 1,
+      stopoverAirportCode: hubCode,
+      baseFares: {
+        economy: baseFare,
+        "premium-economy": Math.round(baseFare * 1.45),
+        business: Math.round(baseFare * 2.55),
+      },
+      amenities: ["Meal service", "Standard baggage", "Mobile boarding pass"],
+      reliability: "91% on-time in the last 30 days",
     };
   }
 
@@ -269,7 +315,8 @@ export class FlightsService {
       throw new AppError(400, "INVALID_FLIGHT_ID", "Flight id must be in the format templateId:YYYY-MM-DD.");
     }
 
-    const template = this.flightsRepository.findTemplateById(templateId);
+    const template =
+      this.flightsRepository.findTemplateById(templateId) ?? this.parseGeneratedTemplate(templateId);
 
     if (!template) {
       throw new AppError(404, "FLIGHT_NOT_FOUND", `No flight template exists for id ${templateId}.`);
@@ -282,6 +329,66 @@ export class FlightsService {
     // Creates one unique id for a flight on a specific date.
     return `${templateId}:${date}`;
   }
+
+  private parseGeneratedTemplate(templateId: string): FlightTemplate | undefined {
+    const match = /^generated-([a-z]{3})-([a-z]{3})-1$/.exec(templateId);
+
+    if (!match) {
+      return undefined;
+    }
+
+    const [, originCode, destinationCode] = match;
+
+    if (!originCode || !destinationCode) {
+      return undefined;
+    }
+
+    return this.buildGeneratedOneStopTemplate(originCode.toUpperCase(), destinationCode.toUpperCase());
+  }
+}
+
+function chooseHub(originCode: string, destinationCode: string): string {
+  const preferredHubs = ["DEL", "BOM", "DXB", "DOH", "SIN", "LHR"];
+
+  return preferredHubs.find((code) => code !== originCode && code !== destinationCode) ?? "DEL";
+}
+
+function estimateDurationMinutes(originCode: string, destinationCode: string): number {
+  const pair = [originCode, destinationCode].sort().join("-");
+  const knownDurations: Record<string, number> = {
+    "BOM-DEL": 135,
+    "BLR-DEL": 165,
+    "BOM-BLR": 110,
+    "DEL-DXB": 220,
+    "BOM-DXB": 185,
+    "BLR-DXB": 245,
+    "DXB-LHR": 440,
+    "DOH-LHR": 425,
+    "DEL-LHR": 605,
+    "BOM-LHR": 600,
+    "DEL-JFK": 905,
+    "JFK-LHR": 420,
+    "DXB-JFK": 840,
+    "SFO-SIN": 1020,
+    "DEL-SIN": 350,
+    "BOM-SIN": 330,
+    "BLR-SIN": 270,
+    "CDG-DOH": 395,
+    "BOM-CDG": 615,
+    "DEL-CDG": 570,
+  };
+
+  return knownDurations[pair] ?? 360;
+}
+
+function estimateBaseFare(durationMinutes: number): number {
+  return Math.max(7800, Math.round(durationMinutes * 58));
+}
+
+function flightNumberFromRoute(routeSeed: string): string {
+  const total = Array.from(routeSeed).reduce((sum, character) => sum + character.charCodeAt(0), 0);
+
+  return (100 + (total % 800)).toString();
 }
 
 function formatDuration(durationMinutes: number): string {

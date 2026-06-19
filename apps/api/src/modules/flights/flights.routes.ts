@@ -25,7 +25,7 @@ flightsRouter.get(
   "/search",
   asyncHandler(async (request, response) => {
     const criteria = searchFlightsSchema.parse(request.query);
-    const results = flightsService.searchFlights(criteria);
+    const results = await flightsService.searchFlights(criteria);
 
     response.json({ data: results });
   }),
@@ -37,7 +37,7 @@ flightsRouter.get(
   "/:flightId",
   asyncHandler(async (request, response) => {
     const { flightId } = flightIdSchema.parse(request.params);
-    const flight = flightsService.getFlightDetail(flightId);
+    const flight = await flightsService.getFlightDetail(flightId);
 
     response.json({ data: flight });
   }),
