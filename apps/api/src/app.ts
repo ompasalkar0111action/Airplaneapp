@@ -26,6 +26,8 @@ export const createApp = () => {
   // Create Express application.
   const app = express();
 
+  app.set("trust proxy", 1);
+  
   // Security and request middlewares. // origin: env.WEB_ORIGIN.split(",").map((origin) => origin.trim()), - previously used
 
   app.use(helmet());
