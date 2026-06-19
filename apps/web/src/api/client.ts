@@ -11,7 +11,9 @@ OUTPUT:
 */
 import type { Airport, BookingRecord, BookingRequest, FlightDetail, FlightSummary, SearchRequest } from "../types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://airplaneapp-api.onrender.com";
+
+
 
 // This custom error helps us show backend errors on the frontend.
 class ApiError extends Error {
@@ -45,19 +47,19 @@ export const api = {
   // Search flights using query parameters.
   searchFlights: (criteria: SearchRequest) =>
     request<FlightSummary[]>(
-      `/api/flights/search?${new URLSearchParams({
+      `/flights/search?${new URLSearchParams({
         origin: criteria.origin,
         destination: criteria.destination,
         date: criteria.date,
         cabin: criteria.cabin,
         passengers: criteria.passengers.toString(),
-      }).toString()}`,
+      })}`,
     ),
   // Get one flight with seat map.
-  getFlight: (flightId: string) => request<FlightDetail>(`/api/flights/${encodeURIComponent(flightId)}`),
+  getFlight: (flightId: string) => request<FlightDetail>(`/flights/${encodeURIComponent(flightId)}`),
   // Create a booking from the form data.
   createBooking: (booking: BookingRequest) =>
-    request<BookingRecord>("/api/bookings", {
+    request<BookingRecord>("/bookings", {
       method: "POST",
       body: JSON.stringify(booking),
     }),
