@@ -1,7 +1,19 @@
+
 # Comparative Study: ReactJS vs AngularJS
 
 This is a simple SPA made for the assignment.  
 Domain used: **Flight Booking System**
+
+Live Demo
+
+Frontend:
+https://airplaneapp-webfronend.vercel.app
+
+Backend API:
+https://airplaneapp-api.onrender.com
+
+Health Check:
+https://airplaneapp-api.onrender.com/health
 
 The same task is shown in:
 
@@ -34,10 +46,6 @@ npm install
 npm run dev
 ```
 
-Open:
-
-- Frontend: `http://localhost:5173`
-- Backend check: `http://localhost:8080/health`
 
 ## How To Test
 
