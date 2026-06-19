@@ -1,8 +1,17 @@
+<<<<<<< HEAD:README.md
 
 # Comparative Study: ReactJS vs AngularJS
+=======
+# Airplane Booking Platform
+>>>>>>> 2e061c6 (Update readme):README.markdown
 
-This is a simple SPA made for the assignment.  
-Domain used: **Flight Booking System**
+A full-stack flight booking application built with React, TypeScript, Node.js, and Express.
+
+## Live Demo
+
+- [Frontend Application](https://airplaneapp-webfronend.vercel.app)
+- [Backend API](https://airplaneapp-api.onrender.com)
+- [Health Check](https://airplaneapp-api.onrender.com/health)
 
 Live Demo
 
