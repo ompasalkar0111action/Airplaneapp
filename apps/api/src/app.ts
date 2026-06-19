@@ -27,7 +27,7 @@ export const createApp = () => {
   const app = express();
 
   app.set("trust proxy", 1);
-  
+
   // Security and request middlewares. // origin: env.WEB_ORIGIN.split(",").map((origin) => origin.trim()), - previously used
 
   app.use(helmet());
@@ -46,6 +46,19 @@ export const createApp = () => {
       legacyHeaders: false,
     }),
   );
+// Routes and error handlers.   friendlier:
+  app.get("/", (_request, response) => {
+  response.json({
+    name: "Airplane Booking API",
+    status: "online",
+    health: "/health",
+    endpoints: [
+      "/api/airports",
+      "/api/flights",
+      "/api/bookings"
+    ]
+  });
+});
 
   // Simple health route to check whether server is running.
   app.get("/health", (_request, response) => {
