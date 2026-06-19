@@ -1,9 +1,8 @@
-<<<<<<< HEAD:README.md
 
 # Comparative Study: ReactJS vs AngularJS
-=======
+
 # Airplane Booking Platform
->>>>>>> 2e061c6 (Update readme):README.markdown
+
 
 A full-stack flight booking application built with React, TypeScript, Node.js, and Express.
 
