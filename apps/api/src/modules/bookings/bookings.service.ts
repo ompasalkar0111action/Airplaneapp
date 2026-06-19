@@ -18,7 +18,7 @@ import { randomUUID } from "node:crypto";
 
 import { AppError } from "../../lib/app-error.js";
 import type { FlightsService } from "../flights/flights.service.js";
-import { BookingsRepository, type BookingRecord } from "./bookings.repository.js";
+import type { BookingRecord, BookingsRepository } from "./bookings.repository.js";
 import type { CreateBookingInput } from "./bookings.schemas.js";
 
 export class BookingsService {
@@ -27,7 +27,7 @@ export class BookingsService {
     private readonly flightsService: FlightsService,
   ) {}
 
-  createBooking(input: CreateBookingInput): BookingRecord {
+  async createBooking(input: CreateBookingInput): Promise<BookingRecord> {
     // Booking checks the seat, calculates total price, then saves the record.
     const flight = this.flightsService.getFlightDetail(input.flightId);
     const seat = this.flightsService.findSeat(input.flightId, input.seatId);
@@ -50,7 +50,7 @@ export class BookingsService {
     // Mark seat as reserved before saving the booking.
     this.flightsService.reserveSeat(input.flightId, input.seatId);
 
-    return this.bookingsRepository.create({
+    return await this.bookingsRepository.create({
       id: randomUUID(),
       pnr: createPnr(),
       flightId: input.flightId,
@@ -64,9 +64,9 @@ export class BookingsService {
     });
   }
 
-  getBooking(bookingId: string): BookingRecord {
+  async getBooking(bookingId: string): Promise<BookingRecord> {
     // Used if the frontend wants to load an existing booking again.
-    const booking = this.bookingsRepository.findById(bookingId);
+    const booking = await this.bookingsRepository.findById(bookingId);
 
     if (!booking) {
       throw new AppError(404, "BOOKING_NOT_FOUND", `Booking ${bookingId} does not exist.`);

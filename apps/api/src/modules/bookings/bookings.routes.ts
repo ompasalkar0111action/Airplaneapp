@@ -25,7 +25,7 @@ bookingsRouter.post(
   "/",
   asyncHandler(async (request, response) => {
     const bookingInput = createBookingSchema.parse(request.body);
-    const booking = bookingsService.createBooking(bookingInput);
+    const booking = await bookingsService.createBooking(bookingInput);
 
     response.status(201).json({ data: booking });
   }),
@@ -37,7 +37,7 @@ bookingsRouter.get(
   "/:bookingId",
   asyncHandler(async (request, response) => {
     const { bookingId } = bookingIdSchema.parse(request.params);
-    const booking = bookingsService.getBooking(bookingId);
+    const booking = await bookingsService.getBooking(bookingId);
 
     response.json({ data: booking });
   }),

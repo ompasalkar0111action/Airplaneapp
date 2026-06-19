@@ -21,18 +21,23 @@ export interface BookingRecord {
   status: "confirmed";
 }
 
-export class BookingsRepository {
+export interface BookingsRepository {
+  create(booking: BookingRecord): Promise<BookingRecord>;
+  findById(bookingId: string): Promise<BookingRecord | undefined>;
+}
+
+export class InMemoryBookingsRepository implements BookingsRepository {
   // In-memory storage for bookings.
   private readonly bookings = new Map<string, BookingRecord>();
 
-  create(booking: BookingRecord): BookingRecord {
+  async create(booking: BookingRecord): Promise<BookingRecord> {
     // Save booking and return it.
     this.bookings.set(booking.id, booking);
 
     return booking;
   }
 
-  findById(bookingId: string): BookingRecord | undefined {
+  async findById(bookingId: string): Promise<BookingRecord | undefined> {
     // Find booking by id.
     return this.bookings.get(bookingId);
   }

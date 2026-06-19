@@ -11,7 +11,9 @@ OUTPUT:
 - shared flightsService and bookingsService used by routes
 */
 import { AirportsRepository } from "./modules/airports/airports.repository.js";
-import { BookingsRepository } from "./modules/bookings/bookings.repository.js";
+import { mysqlPool } from "./config/mysql.js";
+import { InMemoryBookingsRepository } from "./modules/bookings/bookings.repository.js";
+import { MysqlBookingsRepository } from "./modules/bookings/mysql-bookings.repository.js";
 import { BookingsService } from "./modules/bookings/bookings.service.js";
 import { FlightsRepository } from "./modules/flights/flights.repository.js";
 import { FlightsService, InventoryRepository } from "./modules/flights/flights.service.js";
@@ -20,7 +22,7 @@ import { FlightsService, InventoryRepository } from "./modules/flights/flights.s
 const airportsRepository = new AirportsRepository();
 const flightsRepository = new FlightsRepository();
 const inventoryRepository = new InventoryRepository();
-const bookingsRepository = new BookingsRepository();
+const bookingsRepository = mysqlPool ? new MysqlBookingsRepository(mysqlPool) : new InMemoryBookingsRepository();
 
 // Flights service handles flight search and seat availability.
 export const flightsService = new FlightsService(airportsRepository, flightsRepository, inventoryRepository);

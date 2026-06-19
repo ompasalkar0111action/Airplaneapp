@@ -54,6 +54,21 @@ npm install
 npm run dev
 ```
 
+## MySQL Booking Storage
+
+Bookings can be stored in MySQL when `DATABASE_URL` is set for the API.
+
+```bash
+mysql -u root -p airplaneapp < apps/api/src/data/mysql-schema.sql
+```
+
+Example API environment value:
+
+```bash
+DATABASE_URL=mysql://root:password@localhost:3306/airplaneapp
+```
+
+If `DATABASE_URL` is not set, the backend falls back to in-memory booking storage for local demos and tests.
 
 ## How To Test
 
@@ -83,7 +98,7 @@ The app has four sections:
 
 ## Notes
 
-- Data is stored in memory for demo purpose.
+- Flight data is static demo data; confirmed bookings can be stored in MySQL.
 - Prices are shown in INR.
 - The project is kept simple for presentation and viva.
 
