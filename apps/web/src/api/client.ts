@@ -56,10 +56,10 @@ export const api = {
       })}`,
     ),
   // Get one flight with seat map.
-  getFlight: (flightId: string) => request<FlightDetail>(`/flights/${encodeURIComponent(flightId)}`),
+  getFlight: (flightId: string) => request<FlightDetail>(`/api/flights/${encodeURIComponent(flightId)}`),
   // Create a booking from the form data.
   createBooking: (booking: BookingRequest) =>
-    request<BookingRecord>("/bookings", {
+    request<BookingRecord>("/api/bookings", {
       method: "POST",
       body: JSON.stringify(booking),
     }),
