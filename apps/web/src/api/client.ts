@@ -49,7 +49,7 @@ export const api = {
   // Search flights using query parameters.
   searchFlights: (criteria: SearchRequest) =>
     request<FlightSummary[]>(
-      `/flights/search?${new URLSearchParams({
+      `/api/flights/search?${new URLSearchParams({
         origin: criteria.origin,
         destination: criteria.destination,
         date: criteria.date,
