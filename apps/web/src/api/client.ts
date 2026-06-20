@@ -13,7 +13,7 @@ import type { Airport, BookingRecord, BookingRequest, FlightDetail, FlightSummar
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://airplaneapp-api.onrender.com";
 
-
+console.log("API BASE:", API_BASE_URL);
 
 // This custom error helps us show backend errors on the frontend.
 class ApiError extends Error {

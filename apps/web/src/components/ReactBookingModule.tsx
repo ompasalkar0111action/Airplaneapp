@@ -18,11 +18,12 @@ OUTPUT:
 import { useEffect, useState } from "react";
 
 import { api } from "../api/client";
+import { fallbackAirports } from "../data/airports";
 import type { Airport, BookingRecord, FlightDetail, FlightSummary } from "../types";
 
 export function ReactBookingModule() {
   // Airport list for dropdowns.
-  const [airports, setAirports] = useState<Airport[]>([]);
+  const [airports, setAirports] = useState<Airport[]>(fallbackAirports);
   // Flights returned after searching.
   const [flights, setFlights] = useState<FlightSummary[]>([]);
   // Full details for one selected flight.
@@ -56,8 +57,13 @@ export function ReactBookingModule() {
     // 1. load airports
     // 2. run one default search
     async function loadData() {
-      const airportData = await api.listAirports();
-      setAirports(airportData);
+      try {
+        const airportData = await api.listAirports();
+        setAirports(airportData.length > 0 ? airportData : fallbackAirports);
+      } catch {
+        setAirports(fallbackAirports);
+      }
+
       await searchFlights();
     }
 
