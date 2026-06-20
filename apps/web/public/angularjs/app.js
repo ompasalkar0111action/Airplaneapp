@@ -98,7 +98,10 @@ OUTPUT:
           params: {
             origin: $scope.search.origin,
             destination: $scope.search.destination,
-            date: $scope.search.date,
+            date: 
+            typeof $scope.search.date === "string"
+              ? $scope.search.date
+              : $scope.search.date.toISOString().slice(0, 10),
             cabin: $scope.search.cabin,
             passengers: 1,
           },
