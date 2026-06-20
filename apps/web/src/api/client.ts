@@ -42,8 +42,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  
   // Get airport list for dropdowns.
   listAirports: () => request<Airport[]>("/api/airports"),
+  
   // Search flights using query parameters.
   searchFlights: (criteria: SearchRequest) =>
     request<FlightSummary[]>(
@@ -55,8 +57,10 @@ export const api = {
         passengers: criteria.passengers.toString(),
       })}`,
     ),
-  // Get one flight with seat map.
+  
+    // Get one flight with seat map.
   getFlight: (flightId: string) => request<FlightDetail>(`/api/flights/${encodeURIComponent(flightId)}`),
+  
   // Create a booking from the form data.
   createBooking: (booking: BookingRequest) =>
     request<BookingRecord>("/api/bookings", {
