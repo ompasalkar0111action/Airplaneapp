@@ -11,7 +11,7 @@ OUTPUT:
 */
 import type { Airport, BookingRecord, BookingRequest, FlightDetail, FlightSummary, SearchRequest } from "../types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://airplaneapp-api.onrender.com";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://airplaneapp-api.onrender.com";
 
 console.log("API BASE:", API_BASE_URL);
 

@@ -336,7 +336,15 @@ function tomorrowIsoDate(): string {
   // Returns tomorrow's date in YYYY-MM-DD format for the default search.
   const value = new Date();
   value.setDate(value.getDate() + 1);
-  return value.toISOString().slice(0, 10);
+  return formatDateForApi(value);
+}
+
+function formatDateForApi(value: Date): string {
+  const year = value.getFullYear();
+  const month = (value.getMonth() + 1).toString().padStart(2, "0");
+  const day = value.getDate().toString().padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 function formatInr(value: number): string {

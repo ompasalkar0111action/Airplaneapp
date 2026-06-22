@@ -17,6 +17,7 @@ OUTPUT:
 */
 import type { CabinClass, FlightTemplate } from "../../data/catalog.js";
 import { AppError } from "../../lib/app-error.js";
+import { logger } from "../../lib/logger.js";
 import { AirportsRepository } from "../airports/airports.repository.js";
 import { FlightsRepository } from "./flights.repository.js";
 import type { SearchFlightsInput } from "./flights.schemas.js";
@@ -174,7 +175,7 @@ export class FlightsService {
 
   private async buildFlightSummary(template: FlightTemplate, date: string): Promise<FlightSummary> {
     // Build one frontend-friendly flight object from raw template data.
-    const bookedSeats = await this.inventoryRepository.listBookedSeats(this.composeFlightId(template.id, date));
+    const bookedSeats = await this.listBookedSeatsForFlight(this.composeFlightId(template.id, date));
     const seatMap = this.buildSeatMap(template, bookedSeats);
     const [arrivalDate, arrivalTime] = addMinutesToSchedule(date, template.departureTime, template.durationMinutes);
 
@@ -208,12 +209,25 @@ export class FlightsService {
   private async buildFlightDetail(template: FlightTemplate, date: string): Promise<FlightDetail> {
     // Flight detail = summary + full seat map.
     const summary = await this.buildFlightSummary(template, date);
-    const bookedSeats = await this.inventoryRepository.listBookedSeats(summary.id);
+    const bookedSeats = await this.listBookedSeatsForFlight(summary.id);
 
     return {
       ...summary,
       seatMap: this.buildSeatMap(template, bookedSeats),
     };
+  }
+
+  private async listBookedSeatsForFlight(flightId: string): Promise<Set<string>> {
+    try {
+      return await this.inventoryRepository.listBookedSeats(flightId);
+    } catch (error) {
+      logger.warn("Could not load booked seats; continuing with empty inventory", {
+        flightId,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+
+      return new Set();
+    }
   }
 
   private findTemplatesForRoute(originCode: string, destinationCode: string): FlightTemplate[] {

@@ -98,10 +98,7 @@ OUTPUT:
           params: {
             origin: $scope.search.origin,
             destination: $scope.search.destination,
-            date: 
-            typeof $scope.search.date === "string"
-              ? $scope.search.date
-              : $scope.search.date.toISOString().slice(0, 10),
+            date: formatDateForApi($scope.search.date),
             cabin: $scope.search.cabin,
             passengers: 1,
           },
@@ -192,6 +189,18 @@ OUTPUT:
     // Returns tomorrow's date in YYYY-MM-DD format.
     var date = new Date();
     date.setDate(date.getDate() + 1);
-    return date.toISOString().slice(0, 10);
+    return formatDateForApi(date);
+  }
+
+  function formatDateForApi(value) {
+    if (typeof value === "string") {
+      return value;
+    }
+
+    var year = value.getFullYear();
+    var month = String(value.getMonth() + 1).padStart(2, "0");
+    var day = String(value.getDate()).padStart(2, "0");
+
+    return year + "-" + month + "-" + day;
   }
 })();

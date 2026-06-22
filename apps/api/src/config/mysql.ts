@@ -1,9 +1,12 @@
 import mysql from "mysql2/promise";
 
 import { env } from "./env.js";
+import { logger } from "../lib/logger.js";
 
-console.log("DATABASE_URL =", env.DATABASE_URL);
-console.log("MYSQL_SSL =", env.MYSQL_SSL);
+logger.info("MySQL configuration loaded", {
+  databaseUrlConfigured: Boolean(env.DATABASE_URL),
+  sslEnabled: env.MYSQL_SSL,
+});
 
 export const mysqlPool = env.DATABASE_URL
   ? mysql.createPool({
